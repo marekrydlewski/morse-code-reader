@@ -54,6 +54,17 @@ def edged_image_to_contours(edged):
             # break
     return -1
 
+def image_to_bird_style_view(image):
+    # apply the four point transform to obtain a top-down
+    # view of the original image
+    warped = four_point_transform(image, screenCnt.reshape(4, 2) * ratio)
+    # convert the warped image to grayscale, then threshold it
+    # to give it that 'black and white' paper effect
+    warped = cv2.cvtColor(warped, cv2.COLOR_BGR2GRAY)
+    warped = threshold_adaptive(warped, 250, offset=10)
+    warped = warped.astype("uint8") * 255
+    return warped
+
 image = load_image_from_args()
 image, orig, ratio = resize_image(image, 500)
 edged = image_to_grey_blur_canny_edges(image)
@@ -66,7 +77,6 @@ cv2.destroyAllWindows()
 
 screenCnt = edged_image_to_contours(edged)
 
-
 # show the contour (outline) of the piece of paper
 print("STEP 2: Find contours of paper")
 cv2.drawContours(image, [screenCnt], -1, (0, 255, 0), 2)
@@ -74,15 +84,7 @@ cv2.imshow("Outline", image)
 cv2.waitKey(0)
 cv2.destroyAllWindows()
 
-# apply the four point transform to obtain a top-down
-# view of the original image
-warped = four_point_transform(orig, screenCnt.reshape(4, 2) * ratio)
-
-# convert the warped image to grayscale, then threshold it
-# to give it that 'black and white' paper effect
-warped = cv2.cvtColor(warped, cv2.COLOR_BGR2GRAY)
-warped = threshold_adaptive(warped, 250, offset=10)
-warped = warped.astype("uint8") * 255
+warped = image_to_bird_style_view(orig)
 
 # show the original and scanned images
 print("STEP 3: Apply perspective transform")
