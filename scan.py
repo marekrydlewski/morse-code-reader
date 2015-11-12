@@ -54,7 +54,7 @@ def edged_image_to_contours(edged):
             # break
     return -1
 
-def image_to_bird_style_view(image):
+def image_to_scan_bird_style_view(image):
     # apply the four point transform to obtain a top-down
     # view of the original image
     warped = four_point_transform(image, screenCnt.reshape(4, 2) * ratio)
@@ -65,29 +65,31 @@ def image_to_bird_style_view(image):
     warped = warped.astype("uint8") * 255
     return warped
 
-image = load_image_from_args()
-image, orig, ratio = resize_image(image, 500)
-edged = image_to_grey_blur_canny_edges(image)
-# show the original image and the edge detected image
-print("STEP 1: Edge Detection")
-# cv2.imshow("Image", image)
-cv2.imshow("Edged", edged)
-cv2.waitKey(0)
-cv2.destroyAllWindows()
 
-screenCnt = edged_image_to_contours(edged)
+if __name__ == '__main__':
+    image = load_image_from_args()
+    image, orig, ratio = resize_image(image, 500)
+    edged = image_to_grey_blur_canny_edges(image)
+    # show the original image and the edge detected image
+    print("STEP 1: Edge Detection")
+    # cv2.imshow("Image", image)
+    cv2.imshow("Edged", edged)
+    cv2.waitKey(0)
+    cv2.destroyAllWindows()
 
-# show the contour (outline) of the piece of paper
-print("STEP 2: Find contours of paper")
-cv2.drawContours(image, [screenCnt], -1, (0, 255, 0), 2)
-cv2.imshow("Outline", image)
-cv2.waitKey(0)
-cv2.destroyAllWindows()
+    screenCnt = edged_image_to_contours(edged)
 
-warped = image_to_bird_style_view(orig)
+    # show the contour (outline) of the piece of paper
+    print("STEP 2: Find contours of paper")
+    cv2.drawContours(image, [screenCnt], -1, (0, 255, 0), 2)
+    cv2.imshow("Outline", image)
+    cv2.waitKey(0)
+    cv2.destroyAllWindows()
 
-# show the original and scanned images
-print("STEP 3: Apply perspective transform")
-cv2.imshow("Original", imutils.resize(orig, height=650))
-cv2.imshow("Scanned", imutils.resize(warped, height=650))
-cv2.waitKey(0)
+    warped = image_to_scan_bird_style_view(orig)
+
+    # show the original and scanned images
+    print("STEP 3: Apply perspective transform")
+    cv2.imshow("Original", imutils.resize(orig, height=650))
+    cv2.imshow("Scanned", imutils.resize(warped, height=650))
+    cv2.waitKey(0)
