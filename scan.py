@@ -24,8 +24,9 @@ def resize_image(image, desired_height):
     # to the new height, clone it, and resize it
     ratio = image.shape[0] / desired_height
     orig = image.copy()
-    image = imutils.resize(image, height = desired_height)
+    image = imutils.resize(image, height=desired_height)
     return image, orig, ratio
+
 
 def image_to_grey_blur_canny_edges(image):
     # convert the image to grayscale, blur it, and find edges
@@ -34,6 +35,7 @@ def image_to_grey_blur_canny_edges(image):
     gray = cv2.GaussianBlur(gray, (5, 5), 0)
     edged = cv2.Canny(gray, 75, 200)
     return edged
+
 
 def edged_image_to_contours(edged):
     # find the contours in the edged image, keeping only the
@@ -54,6 +56,7 @@ def edged_image_to_contours(edged):
             # break
     return -1
 
+
 def image_to_scan_bird_style_view(image, screenCnt, ratio):
     # apply the four point transform to obtain a top-down
     # view of the original image
@@ -64,6 +67,7 @@ def image_to_scan_bird_style_view(image, screenCnt, ratio):
     warped = threshold_adaptive(warped, 250, offset=10)
     warped = warped.astype("uint8") * 255
     return warped
+
 
 def save_scanned_image():
     image = load_image_from_args()
@@ -96,32 +100,47 @@ def save_scanned_image():
 
 
 if __name__ == '__main__':
-    #image = load_image_from_args()
+    letters_to_morse = {'A': '.-', 'B': '-...', 'C': '-.-.',
+                        'D': '-..', 'E': '.', 'F': '..-.',
+                        'G': '--.', 'H': '....', 'I': '..',
+                        'J': '.---', 'K': '-.-', 'L': '.-..',
+                        'M': '--', 'N': '-.', 'O': '---',
+                        'P': '.--.', 'Q': '--.-', 'R': '.-.',
+                        'S': '...', 'T': '-', 'U': '..-',
+                        'V': '...-', 'W': '.--', 'X': '-..-',
+                        'Y': '-.--', 'Z': '--..',
+                        '0': '-----', '1': '.----', '2': '..---',
+                        '3': '...--', '4': '....-', '5': '.....',
+                        '6': '-....', '7': '--...', '8': '---..',
+                        '9': '----.'
+                        }
+    morse_to_letters = dict((v, k) for k, v in letters_to_morse.items())
+    print(morse_to_letters)
+
+    ### FUCKING CONTOURS FUCKING, THAT LAST CONTOUR IN MORSE_CNT WTF??????????? ?????
+    # image = load_image_from_args()
     image = cv2.imread("images/morse_scanned.jpg")
-    #image = image_to_grey_blur_canny_edges(image)
+    # image = image_to_grey_blur_canny_edges(image)
     image = cv2.cvtColor(image, cv2.COLOR_BGR2GRAY)
     image = cv2.GaussianBlur(image, (5, 5), 0)
-    #image = cv2.Canny(image, 75, 200)
-    #morse = cv2.dilate(image,kernel,iterations = 1)
-    #edged = cv2.Canny(gray, 75, 200)
+    # image = cv2.Canny(image, 75, 200)
+    # morse = cv2.dilate(image,kernel,iterations = 1)
+    # edged = cv2.Canny(gray, 75, 200)
     morse, cnts, hierarchy = cv2.findContours(image.copy(), cv2.RETR_LIST, cv2.CHAIN_APPROX_SIMPLE)
     morse_cnts = []
     for c in cnts:
         if len(c) > 30:
             morse_cnts.append(c)
-    
 
-    #print(cnts)
-    cv2.drawContours(image, cnts, -1, (0,255,0), 5)
-    #morse = cv2.morphologyEx(morse, cv2.MORPH_OPEN, kernel)
-    #morse = cv2.dilate(image,kernel,iterations = 1)
+        # print(cnts)
+    cv2.drawContours(image, cnts, -1, (0, 255, 0), 5)
+    # morse = cv2.morphologyEx(morse, cv2.MORPH_OPEN, kernel)
+    # morse = cv2.dilate(image,kernel,iterations = 1)
     # gray = cv2.cvtColor(morse, cv2.COLOR_BGR2GRAY)
-    #gray = cv2.GaussianBlur(morse, (5, 5), 0)
-    #edged = cv2.Canny(gray, 75, 200)
+    # gray = cv2.GaussianBlur(morse, (5, 5), 0)
+    # edged = cv2.Canny(gray, 75, 200)
     # morse = cv2.Canny(image, 180, 200)
+
     cv2.imshow("Scanned", imutils.resize(image, height=650))
     cv2.waitKey(0)
-
-    cv2.waitKey(0)
-
     # save_scanned_image()
