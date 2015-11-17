@@ -54,7 +54,7 @@ def edged_image_to_contours(edged):
             # break
     return -1
 
-def image_to_scan_bird_style_view(image):
+def image_to_scan_bird_style_view(image, screenCnt, ratio):
     # apply the four point transform to obtain a top-down
     # view of the original image
     warped = four_point_transform(image, screenCnt.reshape(4, 2) * ratio)
@@ -65,8 +65,7 @@ def image_to_scan_bird_style_view(image):
     warped = warped.astype("uint8") * 255
     return warped
 
-
-if __name__ == '__main__':
+def save_scanned_image():
     image = load_image_from_args()
     image, orig, ratio = resize_image(image, 500)
     edged = image_to_grey_blur_canny_edges(image)
@@ -86,10 +85,35 @@ if __name__ == '__main__':
     cv2.waitKey(0)
     cv2.destroyAllWindows()
 
-    warped = image_to_scan_bird_style_view(orig)
+    warped = image_to_scan_bird_style_view(orig, screenCnt, ratio)
 
     # show the original and scanned images
     print("STEP 3: Apply perspective transform")
     cv2.imshow("Original", imutils.resize(orig, height=650))
     cv2.imshow("Scanned", imutils.resize(warped, height=650))
+    # cv2.imwrite("images/morse_scanned.jpg", warped)
     cv2.waitKey(0)
+
+
+if __name__ == '__main__':
+    image = load_image_from_args()
+    #image = image_to_grey_blur_canny_edges(image)
+    image = cv2.cvtColor(image, cv2.COLOR_BGR2GRAY)
+    image = cv2.GaussianBlur(image, (5, 5), 0)
+    #image = cv2.Canny(image, 75, 200)
+    #morse = cv2.dilate(image,kernel,iterations = 1)
+    #edged = cv2.Canny(gray, 75, 200)
+    morse, cnts, hierarchy = cv2.findContours(image.copy(), cv2.RETR_TREE, cv2.CHAIN_APPROX_SIMPLE)
+    #print(cnts)
+    #morse = cv2.morphologyEx(morse, cv2.MORPH_OPEN, kernel)
+    #morse = cv2.dilate(image,kernel,iterations = 1)
+    # gray = cv2.cvtColor(morse, cv2.COLOR_BGR2GRAY)
+    #gray = cv2.GaussianBlur(morse, (5, 5), 0)
+    #edged = cv2.Canny(gray, 75, 200)
+    # morse = cv2.Canny(image, 180, 200)
+    cv2.imshow("Scanned", imutils.resize(morse, height=650))
+    cv2.waitKey(0)
+
+    cv2.waitKey(0)
+
+    # save_scanned_image()
