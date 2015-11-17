@@ -96,22 +96,30 @@ def save_scanned_image():
 
 
 if __name__ == '__main__':
-    image = load_image_from_args()
+    #image = load_image_from_args()
+    image = cv2.imread("images/morse_scanned.jpg")
     #image = image_to_grey_blur_canny_edges(image)
     image = cv2.cvtColor(image, cv2.COLOR_BGR2GRAY)
     image = cv2.GaussianBlur(image, (5, 5), 0)
     #image = cv2.Canny(image, 75, 200)
     #morse = cv2.dilate(image,kernel,iterations = 1)
     #edged = cv2.Canny(gray, 75, 200)
-    morse, cnts, hierarchy = cv2.findContours(image.copy(), cv2.RETR_TREE, cv2.CHAIN_APPROX_SIMPLE)
+    morse, cnts, hierarchy = cv2.findContours(image.copy(), cv2.RETR_LIST, cv2.CHAIN_APPROX_SIMPLE)
+    morse_cnts = []
+    for c in cnts:
+        if len(c) > 30:
+            morse_cnts.append(c)
+    
+
     #print(cnts)
+    cv2.drawContours(image, cnts, -1, (0,255,0), 5)
     #morse = cv2.morphologyEx(morse, cv2.MORPH_OPEN, kernel)
     #morse = cv2.dilate(image,kernel,iterations = 1)
     # gray = cv2.cvtColor(morse, cv2.COLOR_BGR2GRAY)
     #gray = cv2.GaussianBlur(morse, (5, 5), 0)
     #edged = cv2.Canny(gray, 75, 200)
     # morse = cv2.Canny(image, 180, 200)
-    cv2.imshow("Scanned", imutils.resize(morse, height=650))
+    cv2.imshow("Scanned", imutils.resize(image, height=650))
     cv2.waitKey(0)
 
     cv2.waitKey(0)
