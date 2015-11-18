@@ -137,10 +137,10 @@ if __name__ == '__main__':
         if (len(c) > 30) and (cv2.arcLength(c,1) < ((2*h+2*w) * 0.5)):
             morse_cnts.append(c)
             M = cv2.moments(c)
-            morse_cent.append([int(M['m10']/M['m00']), int(M['m01']/M['m00'])])
+            morse_cent.append([int(M['m10']/M['m00']), int(M['m01']/M['m00'])]) #create list of centroids
 
     group_morse = grey_image.copy()
-    group_morse = cv2.erode(group_morse, np.ones((11,11), np.uint8), iterations=8)
+    group_morse = cv2.erode(group_morse, np.ones((11,11), np.uint8), iterations=8) #erode to create big contours - groups, aka letters
     _, grp_cnts, _ = cv2.findContours(group_morse.copy(), cv2.RETR_LIST, cv2.CHAIN_APPROX_SIMPLE)
     morse_grp_cnts = []
     for c in grp_cnts:
@@ -151,9 +151,9 @@ if __name__ == '__main__':
     for grp_cnt in morse_grp_cnts:
         grp = []
         for i in range(0, len(morse_cnts)):
-            if cv2.pointPolygonTest(grp_cnt, (morse_cent[i][0], morse_cent[i][1]), False) > 0:
+            if cv2.pointPolygonTest(grp_cnt, (morse_cent[i][0], morse_cent[i][1]), False) > 0: #if centroid is in group shape, this dot/dash belongs to group
                 grp.append(morse_cnts[i])
-        morse_groups.append(grp)
+        morse_groups.append(grp) #add group to group set
 
     # cv2.drawContours(image, morse_cnts, -1, (0, 120, 0), 10)
     mod = 255 / len(morse_groups)
