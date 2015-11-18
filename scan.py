@@ -101,7 +101,7 @@ def save_scanned_image():
     # return imutils.resize(warped, height=1200)
     # cv2.imshow("Scanned", imutils.resize(warped, height=650))
     # cv2.waitKey(0)
-    return warped
+    return warped, orig
 
 
 def sort_by_centroids(contours, centroids):
@@ -218,7 +218,7 @@ def get_morse_text(morse_groups, morse_groups_cent):
 
 if __name__ == '__main__':
     # image = load_image_from_args()
-    image = save_scanned_image()
+    image, true_orig = save_scanned_image()
 
     #cv2.imwrite("images/morse_scanned2.jpg", image)
     #image = cv2.imread("images/morse_scanned2.jpg")
@@ -238,5 +238,6 @@ if __name__ == '__main__':
         cv2.putText(orig, morse_text[i], (center[0], center[1]), cv2.FONT_HERSHEY_COMPLEX, 4, (0, 0 ,255), 10)
 
     cv2.imshow("Morse code scanned", imutils.resize(orig, height=650))
+    cv2.imshow("Orginal", imutils.resize(true_orig, height=650))
     cv2.waitKey(0)
     # save_scanned_image()
