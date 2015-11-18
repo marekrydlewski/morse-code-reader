@@ -75,29 +75,33 @@ def save_scanned_image():
     image, orig, ratio = resize_image(image, 500)
     edged = image_to_grey_blur_canny_edges(image)
     # show the original image and the edge detected image
-    print("STEP 1: Edge Detection")
+    # print("STEP 1: Edge Detection")
     # cv2.imshow("Image", image)
-    cv2.imshow("Edged", edged)
-    cv2.waitKey(0)
-    cv2.destroyAllWindows()
+    # cv2.imshow("Edged", edged)
+    # cv2.waitKey(0)
+    # cv2.destroyAllWindows()
 
     screenCnt = edged_image_to_contours(edged)
 
     # show the contour (outline) of the piece of paper
-    print("STEP 2: Find contours of paper")
-    cv2.drawContours(image, [screenCnt], -1, (0, 255, 0), 2)
-    cv2.imshow("Outline", image)
-    cv2.waitKey(0)
-    cv2.destroyAllWindows()
+    # print("STEP 2: Find contours of paper")
+    # cv2.drawContours(image, [screenCnt], -1, (0, 255, 0), 2)
+    # cv2.imshow("Outline", image)
+    # cv2.waitKey(0)
+    # cv2.destroyAllWindows()
 
     warped = image_to_scan_bird_style_view(orig, screenCnt, ratio)
 
     # show the original and scanned images
-    print("STEP 3: Apply perspective transform")
-    cv2.imshow("Original", imutils.resize(orig, height=650))
-    cv2.imshow("Scanned", imutils.resize(warped, height=650))
+    # print("STEP 3: Apply perspective transform")
+    # cv2.imshow("Original", imutils.resize(orig, height=650))
+    # cv2.imshow("Scanned", imutils.resize(warped, height=650))
     # cv2.imwrite("images/morse_scanned.jpg", warped)
-    cv2.waitKey(0)
+    # cv2.waitKey(0)
+    # return imutils.resize(warped, height=1200)
+    # cv2.imshow("Scanned", imutils.resize(warped, height=650))
+    # cv2.waitKey(0)
+    return warped, orig
 
 
 def sort_by_centroids(contours, centroids):
@@ -152,10 +156,13 @@ def crop_and_clear_image(image):
     h, w = image.shape[:2]
     image = image[0.03*h:0.97*h,0.03*w:0.97*w] #crop image to cut away borders with fuzz
     h, w = image.shape[:2]
-    grey_image = cv2.cvtColor(image, cv2.COLOR_BGR2GRAY)
+    grey_image = image
+    #grey_image = cv2.cvtColor(image, cv2.COLOR_BGR2GRAY)
     for i in range(1,5):
         grey_image = cv2.GaussianBlur(grey_image, (9, 9), 0)
         _, grey_image = cv2.threshold(grey_image, 170, 255, 0)
+    # grey_image = cv2.dilate(grey_image, np.ones((5,5), np.uint8))
+    # grey_image = cv2.erode(grey_image, np.ones((5,5), np.uint8))
     return grey_image
 
 
@@ -187,7 +194,8 @@ def find_morse_contours(group_morse):
         grp = []
         grp_cent = []
         for i in range(0, len(morse_cnts)):
-            if cv2.pointPolygonTest(grp_cnt, (morse_cent[i][0], morse_cent[i][1]), False) > 0: #if centroid is in group shape, this dot/dash belongs to group
+            if cv2.pointPolygonTest(grp_cnt, (morse_cent[i][0], morse_cent[i][1]), False) > 0:
+                #if centroid is in group shape, this dot/dash belongs to group
                 grp.append(morse_cnts[i])
                 grp_cent.append(morse_cent[i])
         morse_groups.append(grp) #add group to group set
@@ -210,18 +218,26 @@ def get_morse_text(morse_groups, morse_groups_cent):
 
 if __name__ == '__main__':
     # image = load_image_from_args()
-    image = cv2.imread("images/morse_scanned.jpg")
+    image, true_orig = save_scanned_image()
+
+    #cv2.imwrite("images/morse_scanned2.jpg", image)
+    #image = cv2.imread("images/morse_scanned2.jpg")
     orig = image.copy()
     grey_image = crop_and_clear_image(image)
+    cv2.imshow("After cropping", imutils.resize(grey_image, height=650))
+    cv2.waitKey(0)
     morse_cent, morse_cnts = find_centroids(grey_image)
 
     group_morse = grey_image.copy()
     group_morse, morse_groups, morse_groups_cent, morse_grp_cnts = find_morse_contours(group_morse)
+    cv2.imshow("Morse code grouped", imutils.resize(group_morse, height=650))
+    cv2.waitKey(0)
     morse_text = get_morse_text(morse_groups, morse_groups_cent)
     for i in range(len(morse_groups)):
         center = morse_groups_cent[i][0]
         cv2.putText(orig, morse_text[i], (center[0], center[1]), cv2.FONT_HERSHEY_COMPLEX, 4, (0, 0 ,255), 10)
 
     cv2.imshow("Morse code scanned", imutils.resize(orig, height=650))
+    cv2.imshow("Orginal", imutils.resize(true_orig, height=650))
     cv2.waitKey(0)
     # save_scanned_image()
