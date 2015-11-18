@@ -161,6 +161,8 @@ def crop_and_clear_image(image):
     for i in range(1,5):
         grey_image = cv2.GaussianBlur(grey_image, (9, 9), 0)
         _, grey_image = cv2.threshold(grey_image, 170, 255, 0)
+    # grey_image = cv2.dilate(grey_image, np.ones((5,5), np.uint8))
+    # grey_image = cv2.erode(grey_image, np.ones((5,5), np.uint8))
     return grey_image
 
 
@@ -217,14 +219,19 @@ def get_morse_text(morse_groups, morse_groups_cent):
 if __name__ == '__main__':
     # image = load_image_from_args()
     image = save_scanned_image()
+
     #cv2.imwrite("images/morse_scanned2.jpg", image)
     #image = cv2.imread("images/morse_scanned2.jpg")
     orig = image.copy()
     grey_image = crop_and_clear_image(image)
+    cv2.imshow("After cropping", imutils.resize(grey_image, height=650))
+    cv2.waitKey(0)
     morse_cent, morse_cnts = find_centroids(grey_image)
 
     group_morse = grey_image.copy()
     group_morse, morse_groups, morse_groups_cent, morse_grp_cnts = find_morse_contours(group_morse)
+    cv2.imshow("Morse code grouped", imutils.resize(group_morse, height=650))
+    cv2.waitKey(0)
     morse_text = get_morse_text(morse_groups, morse_groups_cent)
     for i in range(len(morse_groups)):
         center = morse_groups_cent[i][0]
