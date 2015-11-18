@@ -122,7 +122,9 @@ if __name__ == '__main__':
     image = cv2.imread("images/morse_scanned.jpg")
     # image = image_to_grey_blur_canny_edges(image)
     image = cv2.cvtColor(image, cv2.COLOR_BGR2GRAY)
-    image = cv2.GaussianBlur(image, (5, 5), 0)
+    for i in range(1,5):
+        image = cv2.GaussianBlur(image, (9, 9), 0)
+        _, image = cv2.threshold(image, 170, 255, 0)
     # image = cv2.Canny(image, 75, 200)
     # morse = cv2.dilate(image,kernel,iterations = 1)
     # edged = cv2.Canny(gray, 75, 200)
@@ -132,8 +134,8 @@ if __name__ == '__main__':
         if len(c) > 30:
             morse_cnts.append(c)
 
-        # print(cnts)
-    cv2.drawContours(image, cnts, -1, (0, 255, 0), 5)
+    # print(morse_cnts)
+    cv2.drawContours(image, morse_cnts[:-1], -1, (0, 255, 0), 2)
     # morse = cv2.morphologyEx(morse, cv2.MORPH_OPEN, kernel)
     # morse = cv2.dilate(image,kernel,iterations = 1)
     # gray = cv2.cvtColor(morse, cv2.COLOR_BGR2GRAY)
