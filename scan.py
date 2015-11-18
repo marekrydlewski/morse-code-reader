@@ -123,21 +123,45 @@ if __name__ == '__main__':
     image = image[0.03*h:0.97*h,0.03*w:0.97*w] #crop image to cut away borders with fuzz
     h, w = image.shape[:2]
     # image = image_to_grey_blur_canny_edges(image)
-    image = cv2.cvtColor(image, cv2.COLOR_BGR2GRAY)
+    grey_image = cv2.cvtColor(image, cv2.COLOR_BGR2GRAY)
     for i in range(1,5):
-        image = cv2.GaussianBlur(image, (9, 9), 0)
-        _, image = cv2.threshold(image, 170, 255, 0)
+        grey_image = cv2.GaussianBlur(grey_image, (9, 9), 0)
+        _, grey_image = cv2.threshold(grey_image, 170, 255, 0)
     # image = cv2.Canny(image, 75, 200)
     # morse = cv2.dilate(image,kernel,iterations = 1)
     # edged = cv2.Canny(gray, 75, 200)
-    morse, cnts, hierarchy = cv2.findContours(image.copy(), cv2.RETR_LIST, cv2.CHAIN_APPROX_SIMPLE)
+    morse, cnts, hierarchy = cv2.findContours(grey_image.copy(), cv2.RETR_LIST, cv2.CHAIN_APPROX_SIMPLE)
     morse_cnts = []
+    morse_cent = []
     for c in cnts:
         if (len(c) > 30) and (cv2.arcLength(c,1) < ((2*h+2*w) * 0.5)):
             morse_cnts.append(c)
-    group_morse = image.copy()
+            M = cv2.moments(c)
+            morse_cent.append([int(M['m10']/M['m00']), int(M['m01']/M['m00'])])
+
+    group_morse = grey_image.copy()
     group_morse = cv2.erode(group_morse, np.ones((11,11), np.uint8), iterations=8)
-    cv2.drawContours(group_morse, morse_cnts, -1, (100, 120, 0), 10)
-    cv2.imshow("Scanned", imutils.resize(group_morse, height=650))
+    _, grp_cnts, _ = cv2.findContours(group_morse.copy(), cv2.RETR_LIST, cv2.CHAIN_APPROX_SIMPLE)
+    morse_grp_cnts = []
+    for c in grp_cnts:
+        if cv2.arcLength(c,1) < ((2*h+2*w) * 0.5):
+            morse_grp_cnts.append(c)
+
+    morse_groups = []
+    for grp_cnt in morse_grp_cnts:
+        grp = []
+        for i in range(0, len(morse_cnts)):
+            if cv2.pointPolygonTest(grp_cnt, (morse_cent[i][0], morse_cent[i][1]), False) > 0:
+                grp.append(morse_cnts[i])
+        morse_groups.append(grp)
+
+    # cv2.drawContours(image, morse_cnts, -1, (0, 120, 0), 10)
+    mod = 255 / len(morse_groups)
+    mltpl = mod
+    for group in morse_groups:
+        cv2.drawContours(image, group, -1, (0, 0, mod), 10)
+        mod = mod + mltpl
+    cv2.drawContours(image, morse_grp_cnts, -1, (0, 255, 0), 10)
+    cv2.imshow("Scanned", imutils.resize(image, height=650))
     cv2.waitKey(0)
     # save_scanned_image()
