@@ -117,9 +117,11 @@ if __name__ == '__main__':
     morse_to_letters = dict((v, k) for k, v in letters_to_morse.items())
     print(morse_to_letters)
 
-    ### FUCKING CONTOURS FUCKING, THAT LAST CONTOUR IN MORSE_CNT WTF??????????? ?????
     # image = load_image_from_args()
     image = cv2.imread("images/morse_scanned.jpg")
+    h, w = image.shape[:2]
+    image = image[0.03*h:0.97*h,0.03*w:0.97*w] #crop image to cut away borders with fuzz
+    h, w = image.shape[:2]
     # image = image_to_grey_blur_canny_edges(image)
     image = cv2.cvtColor(image, cv2.COLOR_BGR2GRAY)
     for i in range(1,5):
@@ -129,7 +131,6 @@ if __name__ == '__main__':
     # morse = cv2.dilate(image,kernel,iterations = 1)
     # edged = cv2.Canny(gray, 75, 200)
     morse, cnts, hierarchy = cv2.findContours(image.copy(), cv2.RETR_LIST, cv2.CHAIN_APPROX_SIMPLE)
-    h, w = image.shape[:2]
     maxContourLenght = (2*h+2*w) * 0.5
     morse_cnts = []
     for c in cnts:
@@ -137,7 +138,7 @@ if __name__ == '__main__':
             morse_cnts.append(c)
 
     # print(morse_cnts)
-    cv2.drawContours(image, morse_cnts[:], -1, (100, 120, 0), 10)
+    cv2.drawContours(image, morse_cnts, -1, (100, 120, 0), 10)
     # morse = cv2.morphologyEx(morse, cv2.MORPH_OPEN, kernel)
     # morse = cv2.dilate(image,kernel,iterations = 1)
     # gray = cv2.cvtColor(morse, cv2.COLOR_BGR2GRAY)
