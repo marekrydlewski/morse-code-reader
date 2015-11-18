@@ -5,6 +5,7 @@
 from pyimagesearch.transform import four_point_transform
 from pyimagesearch import imutils
 from skimage.filters import threshold_adaptive
+import math
 import numpy as np
 import argparse
 import cv2
@@ -106,6 +107,17 @@ def sort_by_centroids(contours, centroids):
                 contours[j], contours[i] = contours[i], contours[j]
     return contours, centroids
 
+def find_morse_message(contours, centroids):
+    result = ''
+    for i in range(len(contours)):
+        contour_lenght = cv2.arcLength(contours[i], 1)
+        r = contour_lenght/(2*math.pi)
+        if (math.floor(0.7*r) <= cv2.pointPolygonTest(contours[i], (centroids[i][0],centroids[i][1]), True)  <= math.ceil(1.3*r)):
+            result = result + '.'
+        else:
+            result = result + '-'
+    return result
+
 if __name__ == '__main__':
     letters_to_morse = {'A': '.-', 'B': '-...', 'C': '-.-.',
                         'D': '-..', 'E': '.', 'F': '..-.',
@@ -166,8 +178,14 @@ if __name__ == '__main__':
         morse_groups.append(grp) #add group to group set
         morse_groups_cent.append(grp_cent)
 
+    morse_groups = morse_groups[::-1]
+    morse_groups_cent = morse_groups_cent[::-1]
+
     for i in range(len(morse_groups)):
         morse_groups[i], morse_groups_cent[i] = sort_by_centroids(morse_groups[i], morse_groups_cent[i])
+
+    for i in range(len(morse_groups)):
+        print(morse_to_letters[find_morse_message(morse_groups[i],morse_groups_cent[i])])
 
     # cv2.drawContours(image, morse_cnts, -1, (0, 120, 0), 10)
     mod = 255 / len(morse_groups)
