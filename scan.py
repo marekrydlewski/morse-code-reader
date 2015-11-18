@@ -131,21 +131,13 @@ if __name__ == '__main__':
     # morse = cv2.dilate(image,kernel,iterations = 1)
     # edged = cv2.Canny(gray, 75, 200)
     morse, cnts, hierarchy = cv2.findContours(image.copy(), cv2.RETR_LIST, cv2.CHAIN_APPROX_SIMPLE)
-    maxContourLenght = (2*h+2*w) * 0.5
     morse_cnts = []
     for c in cnts:
-        if (len(c) > 30) and (cv2.arcLength(c,1) < maxContourLenght):
+        if (len(c) > 30) and (cv2.arcLength(c,1) < ((2*h+2*w) * 0.5)):
             morse_cnts.append(c)
-
-    # print(morse_cnts)
-    cv2.drawContours(image, morse_cnts, -1, (100, 120, 0), 10)
-    # morse = cv2.morphologyEx(morse, cv2.MORPH_OPEN, kernel)
-    # morse = cv2.dilate(image,kernel,iterations = 1)
-    # gray = cv2.cvtColor(morse, cv2.COLOR_BGR2GRAY)
-    # gray = cv2.GaussianBlur(morse, (5, 5), 0)
-    # edged = cv2.Canny(gray, 75, 200)
-    # morse = cv2.Canny(image, 180, 200)
-
-    cv2.imshow("Scanned", imutils.resize(image, height=650))
+    group_morse = image.copy()
+    group_morse = cv2.erode(group_morse, np.ones((11,11), np.uint8), iterations=8)
+    cv2.drawContours(group_morse, morse_cnts, -1, (100, 120, 0), 10)
+    cv2.imshow("Scanned", imutils.resize(group_morse, height=650))
     cv2.waitKey(0)
     # save_scanned_image()
