@@ -99,7 +99,7 @@ def save_scanned_image():
     cv2.waitKey(0)
 
 
-if __name__ == '__main__':
+def translate_letters_to_morse(x):
     letters_to_morse = {'A': '.-', 'B': '-...', 'C': '-.-.',
                         'D': '-..', 'E': '.', 'F': '..-.',
                         'G': '--.', 'H': '....', 'I': '..',
@@ -114,17 +114,46 @@ if __name__ == '__main__':
                         '6': '-....', '7': '--...', '8': '---..',
                         '9': '----.'
                         }
-    morse_to_letters = dict((v, k) for k, v in letters_to_morse.items())
-    print(morse_to_letters)
+    # morse_to_letters = dict((v, k) for k, v in letters_to_morse.items())
+    return letters_to_morse[x]
 
+
+def translate_morse_to_letters(x):
+    morse_to_letters = {'--..': 'Z', '.': 'E', '..-.': 'F', '-.-.': 'C', '-': 'T', '.-.': 'R', '---': 'O', '--.': 'G',
+                        '..': 'I', '--...': '7', '....': 'H', '---..': '8', '.----': '1', '-.': 'N', '--.-': 'Q', '..---': '2',
+                        '----.': '9', '....-': '4', '-..-': 'X', '-...': 'B', '-----': '0', '.-..': 'L', '...-': 'V', '-..': 'D',
+                        '.--': 'W', '..-': 'U','.--.': 'P', '-.-': 'K', '.....': '5', '-....': '6',
+                        '-.--': 'Y', '...': 'S', '--': 'M', '...--': '3', '.-': 'A', '.---': 'J'}
+    return morse_to_letters[x]
+
+
+def find_circles(cimg):
+    image = cimg.copy()
+    circles = cv2.HoughCircles(image, cv2.HOUGH_GRADIENT, 1, 20,
+                               param1=30, param2=15, minRadius=0, maxRadius=0)
+    print(circles)
+    circles = np.uint16(np.around(circles))
+    for i in circles[0, :]:
+        cv2.circle(image, (i[0], i[1]), i[2], (0, 255, 0), 2)
+        cv2.circle(image, (i[0], i[1]), 2, (0, 0, 255), 3)
+    return circles, image
+
+def find_lines(cimg):
+    image = cimg.copy()
+    minLineLength = 30
+    maxLineGap = 0
+    lines = cv2.HoughLinesP(image,1,np.pi/180,15,minLineLength,maxLineGap)
+    return lines
+
+if __name__ == '__main__':
     # image = load_image_from_args()
     image = cv2.imread("images/morse_scanned.jpg")
     h, w = image.shape[:2]
-    image = image[0.03*h:0.97*h,0.03*w:0.97*w] #crop image to cut away borders with fuzz
+    image = image[0.03 * h:0.97 * h, 0.03 * w:0.97 * w]  # crop image to cut away borders with fuzz
     h, w = image.shape[:2]
     # image = image_to_grey_blur_canny_edges(image)
     image = cv2.cvtColor(image, cv2.COLOR_BGR2GRAY)
-    for i in range(1,5):
+    for i in range(1, 5):
         image = cv2.GaussianBlur(image, (9, 9), 0)
         _, image = cv2.threshold(image, 170, 255, 0)
     # image = cv2.Canny(image, 75, 200)
@@ -132,11 +161,15 @@ if __name__ == '__main__':
     # edged = cv2.Canny(gray, 75, 200)
     morse, cnts, hierarchy = cv2.findContours(image.copy(), cv2.RETR_LIST, cv2.CHAIN_APPROX_SIMPLE)
     morse_cnts = []
+    image = (255-image)
+    circles = find_lines(image)
+    print(len(circles))
+
     for c in cnts:
-        if (len(c) > 30) and (cv2.arcLength(c,1) < ((2*h+2*w) * 0.5)):
+        if (len(c) > 30) and (cv2.arcLength(c, 1) < ((2 * h + 2 * w) * 0.5)):
             morse_cnts.append(c)
     group_morse = image.copy()
-    group_morse = cv2.erode(group_morse, np.ones((11,11), np.uint8), iterations=8)
+    group_morse = cv2.dilate(group_morse, np.ones((11, 11), np.uint8), iterations=8)
     cv2.drawContours(group_morse, morse_cnts, -1, (100, 120, 0), 10)
     cv2.imshow("Scanned", imutils.resize(group_morse, height=650))
     cv2.waitKey(0)
