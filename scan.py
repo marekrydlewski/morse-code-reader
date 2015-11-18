@@ -98,6 +98,13 @@ def save_scanned_image():
     # cv2.imwrite("images/morse_scanned.jpg", warped)
     cv2.waitKey(0)
 
+def sort_by_centroids(contours, centroids):
+    for i in range(len(contours)):
+        for j in range(i, len(contours)):
+            if centroids[j][0] < centroids[i][0]:
+                centroids[j], centroids[i] = centroids[i], centroids[j]
+                contours[j], contours[i] = contours[i], contours[j]
+    return contours, centroids
 
 if __name__ == '__main__':
     letters_to_morse = {'A': '.-', 'B': '-...', 'C': '-.-.',
@@ -148,19 +155,30 @@ if __name__ == '__main__':
             morse_grp_cnts.append(c)
 
     morse_groups = []
+    morse_groups_cent = []
     for grp_cnt in morse_grp_cnts:
         grp = []
+        grp_cent = []
         for i in range(0, len(morse_cnts)):
             if cv2.pointPolygonTest(grp_cnt, (morse_cent[i][0], morse_cent[i][1]), False) > 0: #if centroid is in group shape, this dot/dash belongs to group
                 grp.append(morse_cnts[i])
+                grp_cent.append(morse_cent[i])
         morse_groups.append(grp) #add group to group set
+        morse_groups_cent.append(grp_cent)
+
+    for i in range(len(morse_groups)):
+        morse_groups[i], morse_groups_cent[i] = sort_by_centroids(morse_groups[i], morse_groups_cent[i])
 
     # cv2.drawContours(image, morse_cnts, -1, (0, 120, 0), 10)
     mod = 255 / len(morse_groups)
     mltpl = mod
-    for group in morse_groups:
-        cv2.drawContours(image, group, -1, (0, 0, mod), 10)
+    for i in range(len(morse_groups)):
+        cv2.drawContours(image, morse_groups[i], -1, (0, 0, mod), 10)
         mod = mod + mltpl
+        j = 1
+        for center in morse_groups_cent[i]:
+            cv2.putText(image, str(j), (center[0], center[1]), cv2.FONT_HERSHEY_SIMPLEX, 2, (0, 255, 0))
+            j = j+1
     cv2.drawContours(image, morse_grp_cnts, -1, (0, 255, 0), 10)
     cv2.imshow("Scanned", imutils.resize(image, height=650))
     cv2.waitKey(0)
