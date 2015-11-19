@@ -163,8 +163,6 @@ def crop_and_clear_image(image):
     #grey_image = cv2.cvtColor(image, cv2.COLOR_BGR2GRAY)
     for i in range(0,7):
         grey_image = cv2.GaussianBlur(grey_image, (9, 9), 0)
-        cv2.imshow("Gauss", imutils.resize(grey_image, height=650))
-        cv2.waitKey(0)
     _, grey_image = cv2.threshold(grey_image, 170, 255, 0)
     # grey_image = cv2.dilate(grey_image, np.ones((5,5), np.uint8))
     # grey_image = cv2.erode(grey_image, np.ones((5,5), np.uint8))
