@@ -175,7 +175,7 @@ def find_centroids(image):
     morse_cnts = []
     morse_cent = []
     for c in cnts:
-        if (len(c) > 30) and (cv2.arcLength(c,1) < ((2*h+2*w) * 0.5)):
+        if (cv2.arcLength(c,1) > 30) and (cv2.arcLength(c,1) < ((2*h+2*w) * 0.5)):
             morse_cnts.append(c)
             M = cv2.moments(c)
             morse_cent.append([int(M['m10']/M['m00']), int(M['m01']/M['m00'])]) #create list of centroids
