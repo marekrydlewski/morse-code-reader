@@ -116,8 +116,8 @@ def sort_by_centroids(contours, centroids):
 def find_morse_message(contours, centroids):
     result = ''
     for i in range(len(contours)):
-        contour_lenght = cv2.arcLength(contours[i], 1)
-        r = contour_lenght/(2*math.pi)
+        contour_length = cv2.arcLength(contours[i], 1)
+        r = contour_length/(2*math.pi)
         if math.floor(0.7*r) <= cv2.pointPolygonTest(contours[i], (centroids[i][0],centroids[i][1]), True)  <= math.ceil(1.3*r):
             result = result + '.'
         else:
@@ -154,13 +154,18 @@ def translate_morse_to_letters(x):
 
 def crop_and_clear_image(image):
     h, w = image.shape[:2]
-    image = image[0.03*h:0.97*h,0.03*w:0.97*w] #crop image to cut away borders with fuzz
-    h, w = image.shape[:2]
+    image[0:0.03*h,:] = 255
+    image[0.97*h:h,:] = 255
+    image[:,0:0.03*w] = 255
+    image[:,0.97*w:w] = 255#crop image to cut away borders with fuzz
+    # h, w = image.shape[:2]
     grey_image = image
     #grey_image = cv2.cvtColor(image, cv2.COLOR_BGR2GRAY)
-    for i in range(1,5):
+    for i in range(0,7):
         grey_image = cv2.GaussianBlur(grey_image, (9, 9), 0)
-        _, grey_image = cv2.threshold(grey_image, 170, 255, 0)
+        cv2.imshow("Gauss", imutils.resize(grey_image, height=650))
+        cv2.waitKey(0)
+    _, grey_image = cv2.threshold(grey_image, 170, 255, 0)
     # grey_image = cv2.dilate(grey_image, np.ones((5,5), np.uint8))
     # grey_image = cv2.erode(grey_image, np.ones((5,5), np.uint8))
     return grey_image
@@ -181,7 +186,12 @@ def find_centroids(image):
 
 def find_morse_contours(group_morse):
     h, w = group_morse.shape[:2]
-    group_morse = cv2.erode(group_morse, np.ones((11,11), np.uint8), iterations=8) #erode to create big contours - groups, aka letters
+    group_morse = cv2.erode(group_morse, np.ones((11,11), np.uint8), iterations=8)
+    #erode to create big contours - groups, aka letters
+    group_morse[0:0.03*h,:] = 255
+    group_morse[0.97*h:h,:] = 255
+    group_morse[:,0:0.03*w] = 255
+    group_morse[:,0.97*w:w] = 255
     _, grp_cnts, _ = cv2.findContours(group_morse.copy(), cv2.RETR_LIST, cv2.CHAIN_APPROX_SIMPLE)
     morse_grp_cnts = []
     for c in grp_cnts:
@@ -198,8 +208,9 @@ def find_morse_contours(group_morse):
                 #if centroid is in group shape, this dot/dash belongs to group
                 grp.append(morse_cnts[i])
                 grp_cent.append(morse_cent[i])
-        morse_groups.append(grp) #add group to group set
-        morse_groups_cent.append(grp_cent)
+        if len(grp) != 0:
+            morse_groups.append(grp) #add group to group set
+            morse_groups_cent.append(grp_cent)
 
     morse_groups = morse_groups[::-1]
     morse_groups_cent = morse_groups_cent[::-1]
@@ -238,6 +249,6 @@ if __name__ == '__main__':
         cv2.putText(orig, morse_text[i], (center[0], center[1]), cv2.FONT_HERSHEY_COMPLEX, 4, (0, 0 ,255), 10)
 
     cv2.imshow("Morse code scanned", imutils.resize(orig, height=650))
-    cv2.imshow("Orginal", imutils.resize(true_orig, height=650))
+    cv2.imshow("Original", imutils.resize(true_orig, height=650))
     cv2.waitKey(0)
     # save_scanned_image()
