@@ -246,7 +246,7 @@ if __name__ == '__main__':
         center = morse_groups_cent[i][0]
         cv2.putText(orig, morse_text[i], (center[0], center[1]), cv2.FONT_HERSHEY_COMPLEX, 4, (0, 0 ,255), 10)
 
-    cv2.imshow("Morse code scanned", imutils.resize(orig, height=650))
     cv2.imshow("Original", imutils.resize(true_orig, height=650))
+    cv2.imshow("Morse code scanned", imutils.resize(orig, height=650))
     cv2.waitKey(0)
     # save_scanned_image()
